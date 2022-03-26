@@ -13,12 +13,12 @@ using namespace std;
 const int NUM_THREADS = 16;
 
 //kernel generator from: https://gitlab.com/spook/Animator
-shared_ptr<float[]> generateKernel(int diameter)
+shared_ptr<float[]> generateKernel(int diameter, float sigma = 1)
 {
     int x, y, mean;
-    float sigma, sum;
+    float sum;
 
-    sigma = 1;
+    //sigma = 1;
     shared_ptr<float[]> kernel(new float[diameter * diameter]);
     mean = diameter / 2;
     sum = 0.0; // For accumulating the kernel values
@@ -45,14 +45,14 @@ private (x, y)
 }
 
 
-void gaussianBlur(unsigned char* inuputImage, unsigned char* outputImage, int width, int height, int radius)
+void gaussianBlur(unsigned char* inuputImage, unsigned char* outputImage, int width, int height, int radius, float sigma = 1)
 {
     int diameter = 2 * radius + 1;
-    shared_ptr<float[]> kernel = generateKernel(diameter);
+    shared_ptr<float[]> kernel = generateKernel(diameter, sigma);
 
 
-    int row, col, c, sum, x, y, color;
-    float sumKernel, kernelValue;
+    int row, col, c, x, y, color;
+    float sumKernel, kernelValue, sum;
 
     omp_set_num_threads(NUM_THREADS);
 # pragma omp parallel \
@@ -99,20 +99,20 @@ int main()
 
     int radius = 9;
 
-    for (int i = 0; i < 10; i++)
-    {
+    //for (int i = 0; i < 10; i++)
+    //{
     double start_time = omp_get_wtime();
 
-    gaussianBlur(img.data, out.data, img.cols, img.rows, radius);
-    //GaussianBlur(img, out, Size(radius, radius), 1.0);
+    gaussianBlur(img.data, out.data, img.cols, img.rows, radius, 20);
+    //GaussianBlur(img, out, Size(radius, radius), 20.0);
 
     double end = omp_get_wtime();
     double time = end - start_time;
     printf("Time: %lf milliseconds.\n", time * 1000);
-    }
+    //}
 
-    //imshow("img", img);/*
-    //imshow("out", out);*/
+    imshow("img", img);
+    imshow("out", out);
     waitKey(0);
 
     return 0;
