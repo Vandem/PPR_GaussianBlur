@@ -84,7 +84,7 @@ void gaussianBlur(unsigned char* inuputImage, unsigned char* outputImage, int wi
                 }
 
                 if (sumKernel > 0) {
-                    // no false sharing because every channel per pixel has a dedicated index in the array
+                    // no race condition because every channel per pixel has a dedicated index in the array
                     outputImage[3 * row * width + 3 * col + c] = sum / sumKernel;
                 }
             }
@@ -98,13 +98,14 @@ int main()
     Mat out = img.clone();
 
     int radius = 9;
+    float sigma = 20;
 
     //for (int i = 0; i < 10; i++)
     //{
     double start_time = omp_get_wtime();
 
-    gaussianBlur(img.data, out.data, img.cols, img.rows, radius, 20);
-    //GaussianBlur(img, out, Size(radius, radius), 20.0);
+    gaussianBlur(img.data, out.data, img.cols, img.rows, radius, sigma);
+    //GaussianBlur(img, out, Size(radius, radius), sigma);
 
     double end = omp_get_wtime();
     double time = end - start_time;
